@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
-import rca.rw.secure.models.Resource;
+import rca.rw.secure.models.Book;
 import rca.rw.secure.models.User;
 import rca.rw.secure.repos.IUserRepo;
 import rca.rw.secure.services.MailService;
@@ -36,25 +36,25 @@ public class MailServiceImpl implements MailService {
 
     @Async
     @Override
-    public void sendResourceCreatedEmail(String username, Resource resource) {
-        sendEmail(username, resource, "resource-created", "Resource Created");
+    public void sendResourceCreatedEmail(String username, Book book) {
+        sendEmail(username, book, "resource-created", "Resource Created");
     }
 
     @Async
     @Override
-    public void sendResourceUpdatedEmail(String username, Resource resource) {
-        sendEmail(username, resource, "resource-updated", "Resource Updated");
+    public void sendResourceUpdatedEmail(String username, Book book) {
+        sendEmail(username, book, "resource-updated", "Resource Updated");
     }
 
     @Async
     @Override
-    public void sendResourceDeletedEmail(String username, Resource resource) {
-        sendEmail(username, resource, "resource-deleted", "Resource Deleted");
+    public void sendResourceDeletedEmail(String username, Book book) {
+        sendEmail(username, book, "resource-deleted", "Resource Deleted");
     }
 
     @Async
     @Override
-    public void sendBookingStatusEmail(String username, Resource resource, String action, String status) {
+    public void sendBookingStatusEmail(String username, Book book, String action, String status) {
         User user = userRepo.findUserByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
         try {
@@ -62,12 +62,12 @@ public class MailServiceImpl implements MailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
 
             helper.setTo(user.getEmail());
-            helper.setSubject("Your booking has been " + action + ": " + resource.getName());
+            helper.setSubject("Your booking has been " + action + ": " + book.getName());
             helper.setFrom(from);
 
             Context context = new Context();
             context.setVariable("username", username);
-            context.setVariable("resourceName", resource.getName());
+            context.setVariable("resourceName", book.getName());
             context.setVariable("action", action);
             context.setVariable("status", status);
             String htmlContent = templateEngine.process("booking-status", context);
@@ -83,7 +83,7 @@ public class MailServiceImpl implements MailService {
 
     @Async
     @Override
-    public void sendBookingStatusEmailToDefault(Resource resource, String action, String status) {
+    public void sendBookingStatusEmailToDefault(Book book, String action, String status) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
@@ -93,7 +93,7 @@ public class MailServiceImpl implements MailService {
 
             Context context = new Context();
             context.setVariable("username", "Admin");
-            context.setVariable("resourceName", resource.getName());
+            context.setVariable("resourceName", book.getName());
             context.setVariable("action", action);
             context.setVariable("status", status);
             String htmlContent = templateEngine.process("booking-status", context);
@@ -107,7 +107,7 @@ public class MailServiceImpl implements MailService {
         }
     }
 
-    private void sendEmail(String username, Resource resource, String templateName, String subject) {
+    private void sendEmail(String username, Book book, String templateName, String subject) {
         User user = userRepo.findUserByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found: " + username));
         try {
@@ -119,7 +119,7 @@ public class MailServiceImpl implements MailService {
 
             Context context = new Context();
             context.setVariable("username", username);
-            context.setVariable("resourceName", resource.getName());
+            context.setVariable("resourceName", book.getName());
             String htmlContent = templateEngine.process(templateName, context);
 
             helper.setText(htmlContent, true);

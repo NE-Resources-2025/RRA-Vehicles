@@ -11,11 +11,11 @@ import java.util.UUID;
 
 @Data
 @MappedSuperclass
-public class Base {
+public class Base <T>{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
-    private Long id;
+    private T id;
 
     @CreationTimestamp
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss.SSSSSS")

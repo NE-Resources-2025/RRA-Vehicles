@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = PlateNumberValidator.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PlateNumber {
+public @interface ValidPlate {
     String message() default "Invalid plate number";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

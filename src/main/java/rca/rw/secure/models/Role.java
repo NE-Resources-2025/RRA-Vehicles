@@ -9,7 +9,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role extends Base {
+public class Role extends Base <Long>{
 
     @Enumerated(EnumType.STRING)
     @Column(name = "name", unique = true, nullable = false)

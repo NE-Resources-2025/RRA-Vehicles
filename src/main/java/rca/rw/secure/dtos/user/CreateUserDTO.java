@@ -19,13 +19,17 @@ public class CreateUserDTO extends RegisterUserDTO {
         this.setUsername(registerUserDTO.getUsername());
         this.setFirstName(registerUserDTO.getFirstName());
         this.setLastName(registerUserDTO.getLastName());
+        this.setPhone(registerUserDTO.getPhone());
+        this.setNationalId(registerUserDTO.getNationalId());
     }
 
-    public CreateUserDTO(String email, String username, String password, String firstName, String lastName) {
+    public CreateUserDTO(String email, String username, String password, String firstName, String lastName, String phone, String nationalId) {
         this.setEmail(email);
         this.setUsername(username);
         this.setPassword(password);
         this.setFirstName(firstName);
         this.setLastName(lastName);
+        this.setPhone(phone);
+        this.setNationalId(nationalId);
     }
 }

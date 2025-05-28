@@ -1,166 +1,76 @@
-package com.rra.vehicletracking.controller;
+package rca.rw.secure.controllers;
 
-import com.rra.vehicletracking.dto.VehicleOwnershipHistoryDTOs.OwnershipHistoryResponse;
-import com.rra.vehicletracking.service.VehicleOwnershipHistoryService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import rca.rw.secure.dtos.response.ApiResponse;
+import rca.rw.secure.dtos.vehicleOwnerHistory.CreateVehicleOwnershipHistoryDTO;
+import rca.rw.secure.dtos.vehicleOwnerHistory.UpdateVehicleOwnershipHistoryDTO;
+import rca.rw.secure.dtos.vehicleOwnerHistory.VehicleOwnershipHistoryResponseDTO;
+import rca.rw.secure.services.VehicleOwnershipHistoryService;
+import rca.rw.secure.utils.Constants;
 
 @RestController
-@RequestMapping("/api/ownership-history")
-@CrossOrigin(origins = "*")
-@Tag(name = "Ownership History", description = "Endpoints for managing vehicle ownership history")
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.DELETE})
+@RequestMapping("/api/v1/ownership-history")
+@RequiredArgsConstructor
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
 public class VehicleOwnershipHistoryController {
 
-    @Autowired
-    private VehicleOwnershipHistoryService ownershipHistoryService;
+    private final VehicleOwnershipHistoryService ownershipHistoryService;
 
-    @PostMapping
-    @Operation(
-            summary = "Create a new ownership history record",
-            description = "Create a new ownership history record (Admin only)",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Ownership history created", content = @Content(schema = @Schema(implementation = OwnershipHistoryResponse.class))),
-                    @ApiResponse(responseCode = "400", description = "Bad request - Invalid input", content = @Content(schema = @Schema(implementation = String.class)))
-            }
-    )
-    @PreAuthorize("hasRole('ADMIN')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> createOwnershipHistory(@Valid @RequestBody OwnershipHistoryResponse request) {
-        try {
-            OwnershipHistoryResponse response = ownershipHistoryService.createOwnershipHistory(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<VehicleOwnershipHistoryResponseDTO>> createOwnershipHistory(@Valid @RequestBody CreateVehicleOwnershipHistoryDTO request, Authentication authentication) {
+        return ownershipHistoryService.createOwnershipHistory(request, authentication.getName());
     }
 
-    @PutMapping("/{id}")
-    @Operation(
-            summary = "Update an existing ownership history record",
-            description = "Update the details of an existing ownership history record (Admin only)",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Ownership history updated", content = @Content(schema = @Schema(implementation = OwnershipHistoryResponse.class))),
-                    @ApiResponse(responseCode = "400", description = "Bad request - Invalid input", content = @Content(schema = @Schema(implementation = String.class))),
-                    @ApiResponse(responseCode = "404", description = "Ownership history not found", content = @Content(schema = @Schema(implementation = String.class)))
-            }
-    )
-    @PreAuthorize("hasRole('ADMIN')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> updateOwnershipHistory(@PathVariable Long id, @Valid @RequestBody OwnershipHistoryResponse request) {
-        try {
-            OwnershipHistoryResponse response = ownershipHistoryService.updateOwnershipHistory(id, request);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    @PatchMapping("/update/{id}")
+    public ResponseEntity<ApiResponse<VehicleOwnershipHistoryResponseDTO>> updateOwnershipHistory(@PathVariable Long id, @Valid @RequestBody UpdateVehicleOwnershipHistoryDTO request, Authentication authentication) {
+        return ownershipHistoryService.updateOwnershipHistory(id, request, authentication.getName());
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Delete an ownership history record",
-            description = "Delete an ownership history record by its ID (Admin only)",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Ownership history deleted successfully", content = @Content(schema = @Schema(implementation = String.class))),
-                    @ApiResponse(responseCode = "404", description = "Ownership history not found", content = @Content(schema = @Schema(implementation = String.class)))
-            }
-    )
-    @PreAuthorize("hasRole('ADMIN')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> deleteOwnershipHistory(@PathVariable Long id) {
-        try {
-            ownershipHistoryService.deleteOwnershipHistory(id);
-            return ResponseEntity.ok("Ownership history deleted successfully");
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteOwnershipHistory(@PathVariable Long id, Authentication authentication) {
+        return ownershipHistoryService.deleteOwnershipHistory(id, authentication.getName());
     }
 
     @GetMapping("/vehicle/{vehicleId}")
-    @Operation(
-            summary = "Get ownership history by vehicle ID",
-            description = "Retrieve paginated ownership history for a specific vehicle ID",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Successful retrieval", content = @Content(schema = @Schema(implementation = Page.class))),
-                    @ApiResponse(responseCode = "404", description = "Vehicle not found", content = @Content(schema = @Schema(implementation = String.class)))
-            }
-    )
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> getHistoryByVehicleId(
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STANDARD')")
+    public ResponseEntity<ApiResponse<Page<VehicleOwnershipHistoryResponseDTO>>> getHistoryByVehicleId(
             @PathVariable Long vehicleId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "startDate") String sortBy) {
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
-            Page<OwnershipHistoryResponse> history = ownershipHistoryService.getHistoryByVehicleId(vehicleId, pageable);
-            return ResponseEntity.ok(history);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+            @RequestParam(value = "page", defaultValue = Constants.DEFAULT_PAGE_NUMBER) int page,
+            @RequestParam(value = "size", defaultValue = Constants.DEFAULT_PAGE_SIZE) int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit, Sort.Direction.ASC, "id");
+        return ownershipHistoryService.getHistoryByVehicleId(vehicleId, pageable);
     }
 
     @GetMapping("/chassis/{chassisNumber}")
-    @Operation(
-            summary = "Get ownership history by chassis number",
-            description = "Retrieve paginated ownership history for a specific chassis number",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Successful retrieval", content = @Content(schema = @Schema(implementation = Page.class))),
-                    @ApiResponse(responseCode = "404", description = "Vehicle not found", content = @Content(schema = @Schema(implementation = String.class)))
-            }
-    )
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> getHistoryByChassisNumber(
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STANDARD')")
+    public ResponseEntity<ApiResponse<Page<VehicleOwnershipHistoryResponseDTO>>> getHistoryByChassisNumber(
             @PathVariable String chassisNumber,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "startDate") String sortBy) {
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
-            Page<OwnershipHistoryResponse> history = ownershipHistoryService.getHistoryByChassisNumber(chassisNumber, pageable);
-            return ResponseEntity.ok(history);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+            @RequestParam(value = "page", defaultValue = Constants.DEFAULT_PAGE_NUMBER) int page,
+            @RequestParam(value = "size", defaultValue = Constants.DEFAULT_PAGE_SIZE) int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit, Sort.Direction.ASC, "id");
+        return ownershipHistoryService.getHistoryByChassisNumber(chassisNumber, pageable);
     }
 
     @GetMapping("/plate/{plateNumber}")
-    @Operation(
-            summary = "Get ownership history by plate number",
-            description = "Retrieve paginated ownership history for a specific plate number",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Successful retrieval", content = @Content(schema = @Schema(implementation = Page.class))),
-                    @ApiResponse(responseCode = "404", description = "Vehicle not found", content = @Content(schema = @Schema(implementation = String.class)))
-            }
-    )
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<?> getHistoryByPlateNumber(
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STANDARD')")
+    public ResponseEntity<ApiResponse<Page<VehicleOwnershipHistoryResponseDTO>>> getHistoryByPlateNumber(
             @PathVariable String plateNumber,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "startDate") String sortBy) {
-        try {
-            Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, sortBy));
-            Page<OwnershipHistoryResponse> history = ownershipHistoryService.getHistoryByPlateNumber(plateNumber, pageable);
-            return ResponseEntity.ok(history);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
+            @RequestParam(value = "page", defaultValue = Constants.DEFAULT_PAGE_NUMBER) int page,
+            @RequestParam(value = "size", defaultValue = Constants.DEFAULT_PAGE_SIZE) int limit
+    ) {
+        Pageable pageable = PageRequest.of(page, limit, Sort.Direction.ASC, "id");
+        return ownershipHistoryService.getHistoryByPlateNumber(plateNumber, pageable);
     }
 }

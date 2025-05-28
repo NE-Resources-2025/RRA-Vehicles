@@ -1,25 +1,37 @@
-package com.rra.vehicletracking.entity;
+package rca.rw.secure.models;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import rca.rw.secure.validator.ValidChassis;
+
 import java.math.BigDecimal;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "vehicles")
-public class Vehicle {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Table(name = "vehicles", uniqueConstraints = {@UniqueConstraint(columnNames = {"chassisNumber"})})
+public class Vehicle extends Base <Long> {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
+    @ValidChassis
     private String chassisNumber;
 
     @Column(nullable = false)
     private String manufactureCompany;
 
     @Column(nullable = false)
-    private Integer manufactureYear;
+    private Year manufactureYear;
 
     @Column(nullable = false)
     private BigDecimal price;
@@ -38,93 +50,17 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<VehicleOwnershipHistory> ownershipHistory = new ArrayList<>();
 
-    public Vehicle() {
-    }
+//    public Vehicle(String chassisNumber, String manufactureCompany, Integer manufactureYear,
+//                   BigDecimal price, String modelName, PlateNumber plateNumber, VehicleOwner currentOwner,
+//                   List<VehicleOwnershipHistory> ownershipHistory) {
+//        this.chassisNumber = chassisNumber;
+//        this.manufactureCompany = manufactureCompany;
+//        this.manufactureYear = manufactureYear;
+//        this.price = price;
+//        this.modelName = modelName;
+//        this.plateNumber = plateNumber;
+//        this.currentOwner = currentOwner;
+//        this.ownershipHistory = ownershipHistory;
+//    }
 
-    public Vehicle(Long id, String chassisNumber, String manufactureCompany, Integer manufactureYear,
-                   BigDecimal price, String modelName, PlateNumber plateNumber, VehicleOwner currentOwner,
-                   List<VehicleOwnershipHistory> ownershipHistory) {
-        this.id = id;
-        this.chassisNumber = chassisNumber;
-        this.manufactureCompany = manufactureCompany;
-        this.manufactureYear = manufactureYear;
-        this.price = price;
-        this.modelName = modelName;
-        this.plateNumber = plateNumber;
-        this.currentOwner = currentOwner;
-        this.ownershipHistory = ownershipHistory;
-    }
-
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getChassisNumber() {
-        return chassisNumber;
-    }
-
-    public void setChassisNumber(String chassisNumber) {
-        this.chassisNumber = chassisNumber;
-    }
-
-    public String getManufactureCompany() {
-        return manufactureCompany;
-    }
-
-    public void setManufactureCompany(String manufactureCompany) {
-        this.manufactureCompany = manufactureCompany;
-    }
-
-    public Integer getManufactureYear() {
-        return manufactureYear;
-    }
-
-    public void setManufactureYear(Integer manufactureYear) {
-        this.manufactureYear = manufactureYear;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public String getModelName() {
-        return modelName;
-    }
-
-    public void setModelName(String modelName) {
-        this.modelName = modelName;
-    }
-
-    public PlateNumber getPlateNumber() {
-        return plateNumber;
-    }
-
-    public void setPlateNumber(PlateNumber plateNumber) {
-        this.plateNumber = plateNumber;
-    }
-
-    public VehicleOwner getCurrentOwner() {
-        return currentOwner;
-    }
-
-    public void setCurrentOwner(VehicleOwner currentOwner) {
-        this.currentOwner = currentOwner;
-    }
-
-    public List<VehicleOwnershipHistory> getOwnershipHistory() {
-        return ownershipHistory;
-    }
-
-    public void setOwnershipHistory(List<VehicleOwnershipHistory> ownershipHistory) {
-        this.ownershipHistory = ownershipHistory;
-    }
 }

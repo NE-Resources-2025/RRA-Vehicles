@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.Set;
+
 @Data
 public class RegisterUserDTO {
     @Schema(example = "John")
@@ -29,4 +31,13 @@ public class RegisterUserDTO {
     @NotBlank(message = "Password cannot be blank")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
+
+    @Schema(description = "Phone number (10-12 digits, e.g., +250123456789)")
+    private String phone;
+
+    @Schema(description = "Rwandan National ID (16 digits, e.g., 1200080000123042)")
+    private String nationalId;
+
 }
+
+

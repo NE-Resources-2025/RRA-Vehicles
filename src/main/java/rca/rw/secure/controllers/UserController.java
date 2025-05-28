@@ -1,7 +1,12 @@
 package rca.rw.secure.controllers;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import rca.rw.secure.dtos.response.ApiResponse;
 import rca.rw.secure.dtos.user.*;
+import rca.rw.secure.models.User;
 import rca.rw.secure.services.UserService;
 import rca.rw.secure.utils.Constants;
 import jakarta.validation.Valid;
@@ -17,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST})
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyAuthority('ADMIN')")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
 public class UserController {
     private final UserService userService;
 

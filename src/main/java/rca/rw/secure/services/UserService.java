@@ -1,5 +1,6 @@
 package rca.rw.secure.services;
 
+import org.springframework.data.domain.Page;
 import rca.rw.secure.dtos.response.ApiResponse;
 import rca.rw.secure.dtos.user.*;
 import rca.rw.secure.models.User;
@@ -26,5 +27,9 @@ public interface UserService {
     public ResponseEntity<ApiResponse<UserResponseDTO>> removeRoles(Long userId, UserRoleModificationDTO userRoleModificationDTO);
 
     public ResponseEntity<ApiResponse<Object>> deleteUser(Long userId);
+
+    public User getUserByNationalId(String nationalId);
+
+    public User getUserByPhone(String phone);
 }
 

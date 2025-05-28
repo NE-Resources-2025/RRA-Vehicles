@@ -22,6 +22,8 @@ public class UserPrincipal implements UserDetails {
     @JsonIgnore
     private String password;
     private String username;
+    private String phoneNumber;
+    private String nationalId;
     private Collection<? extends GrantedAuthority> authorities;
     private EUserStatus status;
 
@@ -38,6 +40,8 @@ public class UserPrincipal implements UserDetails {
                 user.getEmail(),
                 user.getPassword(),
                 user.getUsername(),
+                user.getPhone(),
+                user.getNationalId(),
                 authorities,
                 user.getStatus()
         );

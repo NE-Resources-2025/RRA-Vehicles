@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = ChassisNumberValidator.class)
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ChassisNumber {
+public @interface ValidChassis {
     String message() default "Invalid chassis number";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};

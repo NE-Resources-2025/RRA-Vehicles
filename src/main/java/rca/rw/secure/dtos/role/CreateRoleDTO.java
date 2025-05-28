@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class CreateRoleDTO {
-    @Schema(example = "ADMIN", description = "Role name")
+    @Schema(example = "ROLE_ADMIN", description = "Role name")
 //    @NotBlank(message = "Role name is required")
     private EUserRole name;
 }

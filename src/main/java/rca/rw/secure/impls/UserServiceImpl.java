@@ -23,12 +23,15 @@ import rca.rw.secure.models.Role;
 import rca.rw.secure.models.User;
 import rca.rw.secure.repos.IUserRepo;
 import rca.rw.secure.utils.HashUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     private final IUserRepo userRepo;
     private final RoleServiceImpl roleService;
     private final IRoleRepo roleRepo;
@@ -39,17 +42,19 @@ public class UserServiceImpl implements UserService {
         if (foundUser.isPresent())
             throw new ConflictException("The user with the given email or username already exists");
         User user = new User();
-        Role role = roleService.getRoleByName(EUserRole.USER);
+        Role role = roleService.getRoleByName(EUserRole.ROLE_STANDARD);
         Set<Role> roles = new HashSet<>();
         roles.add(role);
         user.setUsername(createUserDTO.getUsername());
-        user.setFirstName(createUserDTO.getFirstName());
-        user.setLastName(createUserDTO.getLastName());
+        user.setFullName(createUserDTO.getFirstName() + " " + createUserDTO.getLastName());
         user.setStatus(EUserStatus.ACTIVE);
         user.setEmail(createUserDTO.getEmail());
-        user.setUsername(createUserDTO.getUsername());
         user.setPassword(HashUtil.hashPassword(createUserDTO.getPassword()));
+        user.setFirstName(createUserDTO.getFirstName());
+        user.setLastName(createUserDTO.getLastName());
         user.setFullName(createUserDTO.getFirstName() + " " + createUserDTO.getLastName());
+        user.setPhone(createUserDTO.getPhone());
+        user.setNationalId(createUserDTO.getNationalId());
         user.setRoles(roles);
         return user;
     }
@@ -81,11 +86,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(Long uuid) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(Long userId) {
         try {
-            User user = findUserById(uuid);
+            User user = findUserById(userId);
             return ApiResponse.success("Successfully fetched user", HttpStatus.OK, new UserResponseDTO(user));
         } catch (Exception e) {
+            logger.error("Error fetching user with ID {}: {}", userId, e.getMessage(), e);
             throw new CustomException(e);
         }
     }
@@ -169,4 +175,17 @@ public class UserServiceImpl implements UserService {
             throw new InternalServerErrorException(e.getMessage());
         }
     }
+
+    @Override
+    public User getUserByNationalId(String nationalId) {
+        return userRepo.findByNationalId(nationalId)
+                .orElseThrow(() -> new NotFoundException("User not found with national ID: " + nationalId));
+    }
+
+    @Override
+    public User getUserByPhone(String phone) {
+        return userRepo.findByPhone(phone)
+                .orElseThrow(() -> new NotFoundException("User not found with phone number: " + phone));
+    }
+
 }

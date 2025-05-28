@@ -8,91 +8,91 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import rca.rw.secure.dtos.resource.CreateResourceDTO;
-import rca.rw.secure.dtos.resource.UpdateResourceDTO;
-import rca.rw.secure.models.Resource;
-import rca.rw.secure.repos.IResourceRepo;
+import rca.rw.secure.dtos.book.CreateBookDTO;
+import rca.rw.secure.dtos.book.UpdateBookDTO;
+import rca.rw.secure.models.Book;
+import rca.rw.secure.repos.IBookRepo;
 import rca.rw.secure.services.AuditLogService;
 import rca.rw.secure.services.MailService;
-import rca.rw.secure.services.ResourceService;
+import rca.rw.secure.services.BookService;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class ResourceServiceImpl implements ResourceService {
+public class BookServiceImpl implements BookService {
 
-    private final IResourceRepo resourceRepo;
+    private final IBookRepo bookRepo;
     private final MailService mailService;
     private final AuditLogService auditLogService;
-    private static final Logger logger = LoggerFactory.getLogger(ResourceServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(BookServiceImpl.class);
 
     @Override
     @Transactional
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public Resource createResource(CreateResourceDTO dto, String username) {
-        Resource resource = new Resource();
-        resource.setName(dto.getName());
-        resource.setDescription(dto.getDescription());
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public Book createBook(CreateBookDTO dto, String username) {
+        Book book = new Book();
+        book.setName(dto.getName());
+        book.setDescription(dto.getDescription());
 
-        Resource savedResource = resourceRepo.save(resource);
-        auditLogService.logAction("Resource", savedResource.getId().toString(), "CREATE", username,
-                "Created resource: " + savedResource.getName());
-        mailService.sendResourceCreatedEmail(username, savedResource);
-        logger.info("Resource created: {}", savedResource.getId());
-        return savedResource;
+        Book savedBook = bookRepo.save(book);
+        auditLogService.logAction("Book", savedBook.getId().toString(), "CREATE", username,
+                "Created resource: " + savedBook.getName());
+        mailService.sendResourceCreatedEmail(username, savedBook);
+        logger.info("Resource created: {}", savedBook.getId());
+        return savedBook;
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public Resource updateResource(UUID id, UpdateResourceDTO dto, String username) {
-        Resource resource = resourceRepo.findById(id)
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public Book updateBook(UUID id, UpdateBookDTO dto, String username) {
+        Book book = bookRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Resource not found: " + id));
         if (dto.getName() != null) {
-            resource.setName(dto.getName());
+            book.setName(dto.getName());
         }
         if (dto.getDescription() != null) {
-            resource.setDescription(dto.getDescription());
+            book.setDescription(dto.getDescription());
         }
 
-        Resource updatedResource = resourceRepo.save(resource);
+        Book updatedBook = bookRepo.save(book);
         auditLogService.logAction("Resource", id.toString(), "UPDATE", username,
-                "Updated resource: " + updatedResource.getName());
-        mailService.sendResourceUpdatedEmail(username, updatedResource);
+                "Updated resource: " + updatedBook.getName());
+        mailService.sendResourceUpdatedEmail(username, updatedBook);
         logger.info("Resource updated: {}", id);
-        return updatedResource;
+        return updatedBook;
     }
 
     @Override
     @Transactional
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    public void deleteResource(UUID id, String username) {
-        Resource resource = resourceRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Resource not found: " + id));
-        resourceRepo.delete(resource);
-        auditLogService.logAction("Resource", id.toString(), "DELETE", username,
-                "Deleted resource: " + resource.getName());
-        mailService.sendResourceDeletedEmail(username, resource);
-        logger.info("Resource deleted: {}", id);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public void deleteBook(UUID id, String username) {
+        Book book = bookRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found: " + id));
+        bookRepo.delete(book);
+        auditLogService.logAction("Book", id.toString(), "DELETE", username,
+                "Deleted resource: " + book.getName());
+        mailService.sendResourceDeletedEmail(username, book);
+        logger.info("Book deleted: {}", id);
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
-    public Resource getResourceById(UUID id) {
-        return resourceRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Resource not found: " + id));
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STANDARD')")
+    public Book getBookById(UUID id) {
+        return bookRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Book not found: " + id));
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
-    public Page<Resource> getAllResources(Pageable pageable) {
-        return resourceRepo.findAll(pageable);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STANDARD')")
+    public Page<Book> getAllBooks(Pageable pageable) {
+        return bookRepo.findAll(pageable);
     }
 
     @Override
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USER')")
-    public Page<Resource> searchResources(String searchKey, Pageable pageable) {
-        return resourceRepo.findByNameContainingIgnoreCase(searchKey, pageable);
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_STANDARD')")
+    public Page<Book> searchBooks(String searchKey, Pageable pageable) {
+        return bookRepo.findByNameContainingIgnoreCase(searchKey, pageable);
     }
 }
